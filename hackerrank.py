@@ -1,7 +1,7 @@
 #!/bin/env python3
 
 ##  by Ralf Brown, Carnegie Mellon University
-##  last edit: 29aug2019
+##  last edit: 30aug2019
 
 import argparse
 import json
@@ -299,9 +299,9 @@ class HackerRank():
         for cand in c_info:
             score = cand['score']
             endtime = cand['attempt_endtime']
-            if (score is None or score == '' or not endtime) and not include_incomplete:
+            if not include_incomplete and (score is None or ('status' in cand and cand['status'] == 0)):
                 continue
-            if score == int(score):
+            if score is not None or score == int(score):
                 score = int(score)
             id = cand['id']
             fullname = cand['full_name']
@@ -437,7 +437,7 @@ class HackerRank():
 
     def feedback(self, q_info, late_penalty):
         if not q_info:
-            return '\t0\tTotal (missing or not yet submitted)'
+            return '\t0\t--total-- (missing or not yet submitted)'
         fb = ''
         total = 0.0
         for q_num in q_info:
@@ -705,7 +705,7 @@ class HackerRank():
         if not q_info:
             print("No such question")
             return True
-        hr.print_question(q_info,args.verbose)
+        hr.print_question(q_info,args.verbose,args.terse)
         return True
 
     @staticmethod
