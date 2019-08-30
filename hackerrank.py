@@ -1,7 +1,7 @@
 #!/bin/env python3
 
 ##  by Ralf Brown, Carnegie Mellon University
-##  last edit: 08jun2019
+##  last edit: 29aug2019
 
 import argparse
 import json
@@ -299,7 +299,7 @@ class HackerRank():
         for cand in c_info:
             score = cand['score']
             endtime = cand['attempt_endtime']
-            if (not score or not endtime) and not include_incomplete:
+            if (score is None or score == '' or not endtime) and not include_incomplete:
                 continue
             if score == int(score):
                 score = int(score)
