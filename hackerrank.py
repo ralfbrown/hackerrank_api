@@ -275,7 +275,7 @@ class HackerRank():
                  ('send_email',send_email)]
 #                 ('send_email','true' if send_email else 'false')]
         if fullname:
-            arglist.append(('fullname',fullname))
+            arglist.append(('full_name',fullname))
         if msg and msg != '':
             arglist.append(('message',msg))
         if template:
