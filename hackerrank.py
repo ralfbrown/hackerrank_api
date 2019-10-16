@@ -272,8 +272,8 @@ class HackerRank():
             
     def invite_test_candidate(self,test_id,fullname,email,msg="",template=None,send_email=True,tags=None,addtime=0):
         arglist=[('email',email),
-                 ('send_email',send_email)]
-#                 ('send_email','true' if send_email else 'false')]
+                 ('send_email','true' if send_email else 'false')]
+#                 ('send_email',send_email)]
         if fullname:
             arglist.append(('full_name',fullname))
         if msg and msg != '':
@@ -287,7 +287,7 @@ class HackerRank():
             arglist.append(('accommodations','{"additional_time_percent":'+str(addtime)+'}'))
         return self.post('tests/{}/candidates'.format(test_id),arglist)
 
-    def get_all_test_scores(self,test_id,include_incomplete=False,filters=None):
+    def get_all_test_scores(self,test_id,all_questions=True,include_incomplete=False,filters=None):
         c_info = self.list_test_candidates(test_id,filters=filters)
         scores = []
         all_qs = set()
@@ -312,9 +312,9 @@ class HackerRank():
             percent = cand['percentage_score']
             questions = cand['questions']
             for q in all_qs:
-                if q not in questions:
+                if q not in questions and all_questions:
                     questions[q] = '0'
-                elif questions[q] == int(questions[q]):
+                elif q in questions and questions[q] == int(questions[q]):
                     questions[q] = int(questions[q])
             plag = cand['plagiarism'] if cand['plagiarism_status'] == True else None
             scores += [{'id': id, 'fullname': fullname, 'email': email, 'andrew': andrew, 'score': score,
@@ -437,7 +437,7 @@ class HackerRank():
 
     def feedback(self, q_info, late_penalty):
         if not q_info:
-            return '\t0\t--total-- (missing or not yet submitted)'
+            return '\t0\t--total-- (not yet submitted)'
         fb = ''
         total = 0.0
         for q_num in q_info:
@@ -713,6 +713,11 @@ class HackerRank():
         hr = HackerRank(verbose=args.verbose)
         c_list = hr.list_test_candidates(t_id)
         for c in c_list:
+            if args.starttime:
+                if 'attempt_starttime' in c:
+                    print(c['attempt_starttime'],end='\t')
+                else:
+                    print('---\t')
             fname = c['full_name'] if 'full_name' in c else '{unknown}'
             andrew = HackerRank.get_Andrew_ID(c)
             plag = '**' if 'plagiarism_status' in c and c['plagiarism_status'] else '' 
@@ -744,7 +749,7 @@ class HackerRank():
         for q in questions:
             # cache the question names
             hr.get_question_name(q)
-        print('{}{} ({}) @ {}'.format(fname,andrew,c_info['email'],c_info['attempt_endtime']))
+        print('{}{} ({}) @ {}-{}'.format(fname,andrew,c_info['email'],c_info['attempt_starttime'],c_info['attempt_endtime']))
         for q in questions:
             print('\t{}\t{}'.format(questions[q],hr.get_question_name(q)))
         print('{}%\t{}\tTotal'.format(percent,c_info['score']))
@@ -930,6 +935,7 @@ class HackerRank():
         parser.add_argument("-T","--listtests",action="store_true",help="list available tests")
         parser.add_argument("-t","--showtest",action="store_true",help="display details of a test")
         parser.add_argument("-c","--listcandidates",action="store_true",help="display list of candidates taking test")
+        parser.add_argument("--starttime",action="store_true",help="add attempt start time to candidate listing")
         parser.add_argument("-C","--candidatedetails",action="store_true",help="display detailed results of candidates taking test")
         parser.add_argument("-S","--testscore",action="store_true",help="display detailed score on test T by candidate C")
         parser.add_argument("-P","--plagiarism",action="store_true",help="analyze plagiarism flags for test")
